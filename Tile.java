@@ -4,7 +4,7 @@ import java.awt.*
 
 public class Tile {
 
-    private int number;
+    private String number;
     private Color color;
     private Color textColor;
     private int x;
@@ -12,7 +12,7 @@ public class Tile {
     private int size;
 
     public Tile(int number, Color color, Color textColor, int x, int y, int size) {
-        this.number = number;
+        this.number = String.valueOf(number);
         this.color = color;
         this.textColor = textColor;
         this.x = x;
@@ -22,12 +22,17 @@ public class Tile {
     }
 
     public void paintTiles(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
 
+        Font font = new Font("Tahoma", Font.BOLD, 19);
+        g.setFont(font);
+        FontMetrics fontMetrics = g.getFontMetrics(font);
+        int textMarginX = fontMetrics.stringWidth(number);
+        int textMarginY = -(int) fontMetrics.getLineMetrics(number, g).getBaselineOffsets()[2];
+
+        g.setColor(color);
+        g.fillRoundRect(x, y, size, size, 15, 15);
         g.setColor(textColor);
-        g.drawString(String.valueOf(number), x + 160, y + 70);
-        g2d.setColor(color);
-        g2d.fillRoundRect(x + 150, y + 60, size, size, 10, 10);
+        g.drawString(number, x + (size - textMarginX) / 2, y + size - (size - textMarginY) / 2 - 2);
 
     }
 
