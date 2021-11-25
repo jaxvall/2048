@@ -6,7 +6,7 @@ import java.awt.*;
 
 public class MainWindow extends JFrame {
 
-    static int windowSize = 500;
+    static int windowSize = 600;
 
     public static void main(String[] args) {
         MainWindow game = new MainWindow();
@@ -19,7 +19,7 @@ public class MainWindow extends JFrame {
 
     public void setupComps() {
 
-        Board board = new Board();
+        Board board = new Board(windowSize);
 
         this.setLayout(new BorderLayout(5, 5));
 
