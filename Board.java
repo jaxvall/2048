@@ -15,7 +15,7 @@ import javax.swing.KeyStroke;
 public class Board extends JPanel {
 
     static private boolean firstPaint = true; // the first time the panel has been painted or not
-    static private int gameState = 0; // -1 = end of game, 0 = game not started, 1 = game has begun
+    static private int gameState = 0; // -1 = game lost, 0 = game not started, 1 = game live, 2 = game won
     private int windowSize;
     private int margin;
     private int boardSize;
@@ -67,7 +67,7 @@ public class Board extends JPanel {
 
         for (int i = 0; i < tiles.length; i++) {
             for (int j = 0; j < tiles.length; j++) {
-                tiles[i][j] = new Tile(0, i, j, tileSize);
+                tiles[i][j] = new Tile(0, i, j);
             }
         }
 
@@ -87,6 +87,9 @@ public class Board extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
         paintBackground(g2d);
         paintTitle(g2d);
         paintScore(g2d);
@@ -125,23 +128,31 @@ public class Board extends JPanel {
 
         g.translate(margin, margin);
         g.setColor(Color.decode("#bbada0"));
-        g.fillRoundRect(0, 0, boardSize, boardSize, 8, 8);
+        g.fillRoundRect(0, 0, boardSize, boardSize, 11, 11);
 
-        if (gameState == 1) {
-            addRandTile(1);
-        } else if (gameState == 0 && !firstPaint) {
-            addRandTile(2);
-            gameState = 1;
-        }
-
-        if (firstPaint) {
-            firstPaint = false;
+        List<Integer> emptyTiles = getEmptyTiles();
+        if (emptyTiles.size() > 0) {
+            if (gameState == 1) {
+                addRandTile(1, emptyTiles);
+            } else if (gameState == 0 && !firstPaint) {
+                addRandTile(2, emptyTiles);
+                gameState = 1;
+            }
+            if (firstPaint) {
+                firstPaint = false;
+            }
+        } else {
+            gameState = -1;
         }
 
         for (int i = 0; i < tiles.length; i++) {
             for (int j = 0; j < tiles.length; j++) {
-                tiles[i][j].paintTiles(g);
+                tiles[i][j].paintTiles(g, i, j, tileSize);
             }
+        }
+
+        if (gameState == -1 || gameState == 2) {
+            paintGameOver(g);
         }
     }
 
@@ -155,31 +166,54 @@ public class Board extends JPanel {
         g.drawString("- Press 'R' to restart game", posX, posY + 20);
     }
 
-    public void addRandTile(int numOfTiles) {
+    public void paintGameOver(Graphics g) {
+        g.setColor(new Color(250, 248, 239, 150));
+        g.fillRoundRect(0, 0, boardSize, boardSize, 11, 11);
+
+        String message;
+        if (gameState == -1) {
+            message = "Game over!";
+        } else {
+            message = "You won!";
+        }
+
+        Font font = new Font("MonoSpaced", Font.BOLD, 50);
+        FontMetrics fontMetrics = g.getFontMetrics(font);
+        int textMarginX = fontMetrics.stringWidth(message);
+        g.setFont(font);
+        g.setColor(Color.decode("#776e65"));
+        g.drawString(message, (boardSize - textMarginX) / 2 + 5, boardSize / 2);
+    }
+
+    public List<Integer> getEmptyTiles() {
         List<Integer> randPosList = IntStream.range(0, 16).boxed().collect(Collectors.toCollection(ArrayList::new));
         Collections.shuffle(randPosList);
 
         for (int i = 0; i < tiles.length; i++) {
             for (int j = 0; j < tiles.length; j++) {
                 if (tiles[i][j].getNumber() != 0) {
-                    int posIndex = (i + 1) * (j + 1);
-                    randPosList.remove(Integer.valueOf(posIndex - 1));
+                    int posIndex = (i) * 4 + (j);
+                    randPosList.remove(Integer.valueOf(posIndex));
                 }
             }
         }
 
+        return randPosList;
+    }
+
+    public void addRandTile(int numOfTiles, List<Integer> randPosList) {
         for (int i = 0; i < numOfTiles; i++) {
             if (i < randPosList.size()) {
-                setRandTile(randPosList.get(i));
+                int randPos = randPosList.get(i);
+                setRandTile(randPos);
             }
         }
-
     }
 
     public void setRandTile(int randPos) {
 
-        int randNum = rand.nextInt(4);
-        randNum = (randNum < 3) ? 2 : 4;
+        int randNum = rand.nextInt(5);
+        randNum = (randNum < 4) ? 2 : 4;
 
         int row = Math.floorDiv(randPos, 4);
         int col = randPos % 4;
@@ -202,20 +236,34 @@ public class Board extends JPanel {
 
     public void leftPressed() {
         System.out.println("LEFT");
-        mechs.handleLeft(tiles);
-        this.repaint();
+        int moved = mechs.handleLeft(tiles);
+        updateBoard(moved);
     }
 
     public void upPressed() {
         System.out.println("UP");
+        int moved = mechs.handleUp(tiles);
+        updateBoard(moved);
     }
 
     public void downPressed() {
         System.out.println("DOWN");
+        int moved = mechs.handleDown(tiles);
+        updateBoard(moved);
     }
 
     public void rightPressed() {
         System.out.println("RIGHT");
+        int moved = mechs.handleRight(tiles);
+        updateBoard(moved);
+    }
+
+    public void updateBoard(int moved) {
+        score = mechs.score;
+        if (moved == 1) {
+            this.repaint();
+        }
+        gameState = mechs.checkGameOver(tiles);
     }
 
     public void restart() {

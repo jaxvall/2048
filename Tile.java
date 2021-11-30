@@ -8,16 +8,19 @@ public class Tile {
     private int number;
     private int col;
     private int row;
-    private int size;
+    // private int size;
 
-    public Tile(int number, int row, int col, int size) {
+    public Tile(int number) {
+        this.number = number;
+    }
+
+    public Tile(int number, int row, int col) {
         this.number = number;
         this.col = col;
         this.row = row;
-        this.size = size;
     }
 
-    public void paintTiles(Graphics g) {
+    public void paintTiles(Graphics g, int row, int col, int size) {
 
         int x = col * (10 + size) + 10;
         int y = row * (10 + size) + 10;
@@ -27,9 +30,19 @@ public class Tile {
             g.fillRoundRect(x, y, size, size, 5, 5);
 
         } else {
+
+            int fontSize = 33;
+
+            if (number > 100) {
+                fontSize = 25;
+                if (number > 1000) {
+                    fontSize = 20;
+                }
+            }
+
             String numberString = String.valueOf(number);
 
-            Font font = new Font("MonoSpaced", Font.BOLD, 33);
+            Font font = new Font("MonoSpaced", Font.BOLD, fontSize);
             g.setFont(font);
             FontMetrics fontMetrics = g.getFontMetrics(font);
             int textMarginX = fontMetrics.stringWidth(numberString);
@@ -42,6 +55,20 @@ public class Tile {
                     y + size - (size - textMarginY) / 2 - textMarginY / 5);
         }
 
+    }
+
+    public boolean checkIfPosChange(int row, int col) {
+        if (this.number != 0) {
+            if (row != this.row || col != this.col) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void setPos(int row, int col) {
+        this.row = row;
+        this.col = col;
     }
 
     public void setNumber(int newNumber) {
