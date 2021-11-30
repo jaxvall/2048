@@ -52,14 +52,4 @@ public class Tile {
         return this.number;
     }
 
-    public int getCol() {
-        return this.col;
-
-    }
-
-    public int getRow() {
-        return this.row;
-
-    }
-
 }

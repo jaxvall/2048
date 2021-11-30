@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.ReadPendingException;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,13 +14,15 @@ import javax.swing.KeyStroke;
 
 public class Board extends JPanel {
 
-    static private boolean drawn = false;
+    static private boolean firstPaint = true; // the first time the panel has been painted or not
+    static private int gameState = 0; // -1 = end of game, 0 = game not started, 1 = game has begun
     private int windowSize;
     private int margin;
     private int boardSize;
     private int tileMargin = 10;
     private int tileSize = 80;
     static private Tile[][] tiles = new Tile[4][4];
+    private int score = 0;
     Random rand = new Random();
 
     private GameMechanics mechs = new GameMechanics();
@@ -47,6 +48,13 @@ public class Board extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             rightPressed();
+        }
+    };
+
+    private Action restartGame = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            restart();
         }
     };
 
@@ -79,24 +87,25 @@ public class Board extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        drawBackground(g2d);
-        drawTitle(g2d);
-        drawScore(g2d);
-        createTiles(g2d);
+        paintBackground(g2d);
+        paintTitle(g2d);
+        paintScore(g2d);
+        paintTiles(g2d);
+        paintInstructions(g2d);
     }
 
-    public void drawTitle(Graphics g) {
+    public void paintBackground(Graphics g) {
+        g.setColor(Color.decode("#faf8ef"));
+        g.fillRect(0, 0, windowSize, windowSize);
+    }
+
+    public void paintTitle(Graphics g) {
         g.setFont(new Font("MonoSpaced", Font.BOLD, 50));
         g.setColor(Color.decode("#776e65"));
         g.drawString("2048", margin, 60);
     }
 
-    public void drawBackground(Graphics g) {
-        g.setColor(Color.decode("#faf8ef"));
-        g.fillRect(0, 0, windowSize, windowSize);
-    }
-
-    public void drawScore(Graphics g) {
+    public void paintScore(Graphics g) {
         int rectW = 90;
         int rectH = 50;
         int posX = margin + boardSize - rectW;
@@ -109,22 +118,24 @@ public class Board extends JPanel {
         g.drawString("SCORE", posX + rectW / 4, posY + 20);
         g.setFont(new Font("MonoSpaced", Font.BOLD, 18));
         g.setColor(Color.WHITE);
-        g.drawString(String.valueOf(3452), posX + rectW / 4, posY + 40);
+        g.drawString(String.valueOf(score), posX + rectW / 4, posY + 40);
     }
 
-    public void createTiles(Graphics g) {
+    public void paintTiles(Graphics g) {
 
         g.translate(margin, margin);
         g.setColor(Color.decode("#bbada0"));
         g.fillRoundRect(0, 0, boardSize, boardSize, 8, 8);
 
-        List<Integer> randPosList = IntStream.range(0, 16).boxed().collect(Collectors.toCollection(ArrayList::new));
-        Collections.shuffle(randPosList);
+        if (gameState == 1) {
+            addRandTile(1);
+        } else if (gameState == 0 && !firstPaint) {
+            addRandTile(2);
+            gameState = 1;
+        }
 
-        if (!drawn) {
-            setRandTile(randPosList.get(0));
-            setRandTile(randPosList.get(1));
-            drawn = true;
+        if (firstPaint) {
+            firstPaint = false;
         }
 
         for (int i = 0; i < tiles.length; i++) {
@@ -134,15 +145,46 @@ public class Board extends JPanel {
         }
     }
 
+    public void paintInstructions(Graphics g) {
+        int posX = 0;
+        int posY = boardSize + 30;
+
+        g.setColor(Color.decode("#776e65"));
+        g.setFont(new Font("MonoSpaced", Font.BOLD, 18));
+        g.drawString("- Use arrow keys to move tiles", posX, posY);
+        g.drawString("- Press 'R' to restart game", posX, posY + 20);
+    }
+
+    public void addRandTile(int numOfTiles) {
+        List<Integer> randPosList = IntStream.range(0, 16).boxed().collect(Collectors.toCollection(ArrayList::new));
+        Collections.shuffle(randPosList);
+
+        for (int i = 0; i < tiles.length; i++) {
+            for (int j = 0; j < tiles.length; j++) {
+                if (tiles[i][j].getNumber() != 0) {
+                    int posIndex = (i + 1) * (j + 1);
+                    randPosList.remove(Integer.valueOf(posIndex - 1));
+                }
+            }
+        }
+
+        for (int i = 0; i < numOfTiles; i++) {
+            if (i < randPosList.size()) {
+                setRandTile(randPosList.get(i));
+            }
+        }
+
+    }
+
     public void setRandTile(int randPos) {
 
         int randNum = rand.nextInt(4);
         randNum = (randNum < 3) ? 2 : 4;
 
-        int col = randPos % 4;
         int row = Math.floorDiv(randPos, 4);
+        int col = randPos % 4;
 
-        tiles[col][row].setNumber(randNum);
+        tiles[row][col].setNumber(randNum);
     }
 
     public void setupKeybindings() {
@@ -154,10 +196,14 @@ public class Board extends JPanel {
         this.getActionMap().put("down", down);
         this.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "right");
         this.getActionMap().put("right", right);
+        this.getInputMap().put(KeyStroke.getKeyStroke('R', 0), "restartGame");
+        this.getActionMap().put("restartGame", restartGame);
     }
 
     public void leftPressed() {
         System.out.println("LEFT");
+        mechs.handleLeft(tiles);
+        this.repaint();
     }
 
     public void upPressed() {
@@ -170,6 +216,18 @@ public class Board extends JPanel {
 
     public void rightPressed() {
         System.out.println("RIGHT");
+    }
+
+    public void restart() {
+        System.out.println("RESTART");
+        for (int i = 0; i < tiles.length; i++) {
+            for (int j = 0; j < tiles.length; j++) {
+                tiles[i][j].setNumber(0);
+            }
+        }
+        score = 0;
+        gameState = 0;
+        this.repaint();
     }
 
 }

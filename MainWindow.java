@@ -6,7 +6,7 @@ import java.awt.*;
 
 public class MainWindow extends JFrame {
 
-    static int windowSize = 600;
+    static int windowSize = 640;
 
     public static void main(String[] args) {
         MainWindow game = new MainWindow();
