@@ -1,8 +1,5 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class GameMechanics {
 
@@ -102,16 +99,6 @@ public class GameMechanics {
     }
 
     private List<Tile> addTiles(List<Tile> tileList, boolean addLast) {
-
-        // List<Integer> range = IntStream.range(0, tileList.size() - 1).boxed()
-        // .collect(Collectors.toCollection(ArrayList::new));
-
-        // if (addLast) {
-        // Collections.reverse(range);
-        // }
-
-        List<Integer> removed = new ArrayList<>();
-
         int index = addLast ? tileList.size() - 1 : 0;
         ;
         while (true) {

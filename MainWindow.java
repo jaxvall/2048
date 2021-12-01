@@ -1,7 +1,4 @@
-import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import java.awt.*;
 
 public class MainWindow extends JFrame {
@@ -9,7 +6,7 @@ public class MainWindow extends JFrame {
     static int windowSize = 640;
 
     public static void main(String[] args) {
-        MainWindow game = new MainWindow();
+        new MainWindow();
     }
 
     public MainWindow() {
