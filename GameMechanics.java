@@ -103,28 +103,39 @@ public class GameMechanics {
 
     private List<Tile> addTiles(List<Tile> tileList, boolean addLast) {
 
-        List<Integer> range = IntStream.range(0, tileList.size() - 1).boxed()
-                .collect(Collectors.toCollection(ArrayList::new));
+        // List<Integer> range = IntStream.range(0, tileList.size() - 1).boxed()
+        // .collect(Collectors.toCollection(ArrayList::new));
 
-        if (addLast) {
-            Collections.reverse(range);
-        }
+        // if (addLast) {
+        // Collections.reverse(range);
+        // }
 
-        for (int i : range) {
-            if (i < tileList.size() - 1) {
-                Tile currentTile = tileList.get(i);
-                Tile nextTile = tileList.get(i + 1);
-                int num = currentTile.getNumber();
-                int nextNum = nextTile.getNumber();
+        List<Integer> removed = new ArrayList<>();
 
-                if (num == nextNum) {
-                    tileChange = true;
-                    score += num * 2;
-                    currentTile.setNumber(num * 2);
-                    tileList.remove(i + 1);
+        int index = addLast ? tileList.size() - 1 : 0;
+        ;
+        while (true) {
+            int nextIndex = addLast ? index - 1 : index + 1;
+            if (nextIndex < 0 || nextIndex > tileList.size() - 1) {
+                break;
+            }
+            Tile currentTile = tileList.get(index);
+            Tile nextTile = tileList.get(nextIndex);
+            int num = currentTile.getNumber();
+            int nextNum = nextTile.getNumber();
+
+            index = nextIndex;
+            if (num == nextNum) {
+                tileChange = true;
+                score += num * 2;
+                currentTile.setNumber(num * 2);
+                tileList.remove(nextIndex);
+                if (addLast) {
+                    index--;
+                } else {
+                    index++;
                 }
             }
-
         }
 
         return tileList;

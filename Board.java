@@ -201,12 +201,7 @@ public class Board extends JPanel {
         g.setColor(new Color(250, 248, 239, 150));
         g.fillRoundRect(0, 0, boardSize, boardSize, 11, 11);
 
-        String message;
-        if (gameState == -1) {
-            message = "Game over!";
-        } else {
-            message = "You won!";
-        }
+        String message = "Game over!";
 
         Font font = new Font("MonoSpaced", Font.BOLD, 50);
         FontMetrics fontMetrics = g.getFontMetrics(font);
@@ -243,7 +238,7 @@ public class Board extends JPanel {
 
     public void setRandTile(int randPos) {
         int randNum = rand.nextInt(5);
-        randNum = (randNum < 4) ? 8192 : 8192;
+        randNum = (randNum < 4) ? 2 : 4;
 
         int row = Math.floorDiv(randPos, 4);
         int col = randPos % 4;
