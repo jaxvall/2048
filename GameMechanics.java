@@ -1,5 +1,8 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class GameMechanics {
 
@@ -15,7 +18,7 @@ public class GameMechanics {
 
         for (int row = 0; row < tiles.length; row++) {
             List<Tile> tileList = addNumToList(tiles, row, -1);
-            tileList = addTiles(tileList);
+            tileList = addTiles(tileList, false);
             tileList = addEmptyTiles(tileList, false);
             setNewTiles(tiles, tileList, row, -1);
         }
@@ -32,7 +35,7 @@ public class GameMechanics {
 
         for (int col = 0; col < tiles.length; col++) {
             List<Tile> tileList = addNumToList(tiles, -1, col);
-            tileList = addTiles(tileList);
+            tileList = addTiles(tileList, false);
             tileList = addEmptyTiles(tileList, false);
             setNewTiles(tiles, tileList, -1, col);
         }
@@ -50,7 +53,7 @@ public class GameMechanics {
 
         for (int col = 0; col < tiles.length; col++) {
             List<Tile> tileList = addNumToList(tiles, -1, col);
-            tileList = addTiles(tileList);
+            tileList = addTiles(tileList, true);
             tileList = addEmptyTiles(tileList, true);
             setNewTiles(tiles, tileList, -1, col);
         }
@@ -68,7 +71,7 @@ public class GameMechanics {
 
         for (int row = 0; row < tiles.length; row++) {
             List<Tile> tileList = addNumToList(tiles, row, -1);
-            tileList = addTiles(tileList);
+            tileList = addTiles(tileList, true);
             tileList = addEmptyTiles(tileList, true);
             setNewTiles(tiles, tileList, row, -1);
         }
@@ -98,20 +101,30 @@ public class GameMechanics {
         return tileList;
     }
 
-    private List<Tile> addTiles(List<Tile> tileList) {
+    private List<Tile> addTiles(List<Tile> tileList, boolean addLast) {
 
-        for (int i = 0; i < tileList.size() - 1; i++) {
-            Tile currentTile = tileList.get(i);
-            Tile nextTile = tileList.get(i + 1);
-            int num = currentTile.getNumber();
-            int nextNum = nextTile.getNumber();
+        List<Integer> range = IntStream.range(0, tileList.size() - 1).boxed()
+                .collect(Collectors.toCollection(ArrayList::new));
 
-            if (num == nextNum) {
-                tileChange = true;
-                score += num * 2;
-                currentTile.setNumber(num * 2);
-                tileList.remove(i + 1);
+        if (addLast) {
+            Collections.reverse(range);
+        }
+
+        for (int i : range) {
+            if (i < tileList.size() - 1) {
+                Tile currentTile = tileList.get(i);
+                Tile nextTile = tileList.get(i + 1);
+                int num = currentTile.getNumber();
+                int nextNum = nextTile.getNumber();
+
+                if (num == nextNum && num != 2048) {
+                    tileChange = true;
+                    score += num * 2;
+                    currentTile.setNumber(num * 2);
+                    tileList.remove(i + 1);
+                }
             }
+
         }
 
         return tileList;
@@ -153,9 +166,7 @@ public class GameMechanics {
             for (int col = 0; col < tiles.length - 1; col++) {
                 int currentNum = tiles[row][col].getNumber();
                 int nextNum = tiles[row][col + 1].getNumber();
-                if (currentNum == 2048 || nextNum == 2048) {
-                    return 2;
-                } else if (currentNum == 0 || nextNum == 0 || currentNum == nextNum) {
+                if (currentNum == 0 || nextNum == 0 || currentNum == nextNum) {
                     return 1;
                 }
             }
@@ -165,9 +176,7 @@ public class GameMechanics {
             for (int row = 0; row < tiles.length - 1; row++) {
                 int currentNum = tiles[row][col].getNumber();
                 int nextNum = tiles[row + 1][col].getNumber();
-                if (currentNum == 2048 || nextNum == 2048) {
-                    return 2;
-                } else if (currentNum == 0 || nextNum == 0 || currentNum == nextNum) {
+                if (currentNum == 0 || nextNum == 0 || currentNum == nextNum) {
                     return 1;
                 }
             }

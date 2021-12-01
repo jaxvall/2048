@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -15,14 +16,14 @@ import javax.swing.KeyStroke;
 public class Board extends JPanel {
 
     static private boolean firstPaint = true; // the first time the panel has been painted or not
-    static private int gameState = 0; // -1 = game lost, 0 = game not started, 1 = game live, 2 = game won
+    static private int gameState = 0; // -1 = game lost, 0 = game not started, 1 = game live
     private int windowSize;
     private int margin;
     private int boardSize;
+    private int widgetMargin;
     private int tileMargin = 10;
     private int tileSize = 80;
     static private Tile[][] tiles = new Tile[4][4];
-    private int score = 0;
     Random rand = new Random();
 
     private GameMechanics mechs = new GameMechanics();
@@ -61,6 +62,7 @@ public class Board extends JPanel {
     public Board(int windowSize) {
         this.windowSize = windowSize;
         this.margin = windowSize / 5;
+        this.widgetMargin = 35;
         this.boardSize = tileSize * 4 + tileMargin * 5;
         this.setBackground(Color.decode("#e9e2d2"));
         setupKeybindings();
@@ -93,6 +95,7 @@ public class Board extends JPanel {
         paintBackground(g2d);
         paintTitle(g2d);
         paintScore(g2d);
+        paintHighScore(g2d);
         paintTiles(g2d);
         paintInstructions(g2d);
     }
@@ -103,25 +106,60 @@ public class Board extends JPanel {
     }
 
     public void paintTitle(Graphics g) {
-        g.setFont(new Font("MonoSpaced", Font.BOLD, 50));
+        Font font = new Font("MonoSpaced", Font.BOLD, 52);
+        FontMetrics fontMetrics = g.getFontMetrics(font);
+        int textMarginY = -(int) fontMetrics.getLineMetrics("2048", g).getBaselineOffsets()[2];
+
+        g.setFont(font);
         g.setColor(Color.decode("#776e65"));
-        g.drawString("2048", margin, 60);
+        g.drawString("2048", margin, widgetMargin + textMarginY - 13);
     }
 
     public void paintScore(Graphics g) {
-        int rectW = 90;
+        int rectW = 100;
         int rectH = 50;
-        int posX = margin + boardSize - rectW;
-        int posY = 20;
+        int posX = margin + boardSize - 2 * rectW - 10;
+        int posY = widgetMargin;
+
+        int fontSizeScore = 18;
 
         g.setColor(Color.decode("#bbada0"));
         g.fillRoundRect(posX, posY, rectW, rectH, 5, 5);
         g.setFont(new Font("MonoSpaced", Font.BOLD, 13));
         g.setColor(Color.decode("#eee4da"));
-        g.drawString("SCORE", posX + rectW / 4, posY + 20);
-        g.setFont(new Font("MonoSpaced", Font.BOLD, 18));
+        g.drawString("SCORE", posX + rectW / 6, posY + 20);
+        g.setFont(new Font("MonoSpaced", Font.BOLD, fontSizeScore));
         g.setColor(Color.WHITE);
-        g.drawString(String.valueOf(score), posX + rectW / 4, posY + 40);
+        g.drawString(String.valueOf(mechs.score), posX + rectW / 6, posY + 40);
+    }
+
+    public void paintHighScore(Graphics g) {
+        String highscore = "";
+        try {
+            File scoreFile = new File("highscore.txt");
+            Scanner reader = new Scanner(scoreFile);
+            highscore = reader.nextLine();
+            reader.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int rectW = 100;
+        int rectH = 50;
+        int posX = margin + boardSize - rectW;
+        int posY = widgetMargin;
+
+        int fontSizeScore = 18;
+
+        g.setColor(Color.decode("#bbada0"));
+        g.fillRoundRect(posX, posY, rectW, rectH, 5, 5);
+        g.setFont(new Font("MonoSpaced", Font.BOLD, 13));
+        g.setColor(Color.decode("#eee4da"));
+        g.drawString("BEST", posX + rectW / 6, posY + 20);
+        g.setFont(new Font("MonoSpaced", Font.BOLD, fontSizeScore));
+        g.setColor(Color.WHITE);
+        g.drawString(highscore, posX + rectW / 6, posY + 40);
     }
 
     public void paintTiles(Graphics g) {
@@ -131,15 +169,13 @@ public class Board extends JPanel {
         g.fillRoundRect(0, 0, boardSize, boardSize, 11, 11);
 
         List<Integer> emptyTiles = getEmptyTiles();
+
         if (emptyTiles.size() > 0) {
             if (gameState == 1) {
                 addRandTile(1, emptyTiles);
             } else if (gameState == 0 && !firstPaint) {
                 addRandTile(2, emptyTiles);
                 gameState = 1;
-            }
-            if (firstPaint) {
-                firstPaint = false;
             }
         } else {
             gameState = -1;
@@ -151,8 +187,16 @@ public class Board extends JPanel {
             }
         }
 
+        if (!firstPaint) {
+            gameState = mechs.checkGameOver(tiles);
+        }
+        if (firstPaint) {
+            firstPaint = false;
+        }
+
         if (gameState == -1 || gameState == 2) {
-            paintGameOver(g);
+            System.out.println("ENDGAME PAINT");
+            paintEndgame(g);
         }
     }
 
@@ -166,7 +210,7 @@ public class Board extends JPanel {
         g.drawString("- Press 'R' to restart game", posX, posY + 20);
     }
 
-    public void paintGameOver(Graphics g) {
+    public void paintEndgame(Graphics g) {
         g.setColor(new Color(250, 248, 239, 150));
         g.fillRoundRect(0, 0, boardSize, boardSize, 11, 11);
 
@@ -213,7 +257,7 @@ public class Board extends JPanel {
     public void setRandTile(int randPos) {
 
         int randNum = rand.nextInt(5);
-        randNum = (randNum < 4) ? 2 : 4;
+        randNum = (randNum < 4) ? 1024 : 4;
 
         int row = Math.floorDiv(randPos, 4);
         int col = randPos % 4;
@@ -235,35 +279,62 @@ public class Board extends JPanel {
     }
 
     public void leftPressed() {
-        System.out.println("LEFT");
-        int moved = mechs.handleLeft(tiles);
-        updateBoard(moved);
+        if (gameState == 1) {
+            System.out.println("LEFT");
+            int moved = mechs.handleLeft(tiles);
+            updateBoard(moved);
+        }
     }
 
     public void upPressed() {
-        System.out.println("UP");
-        int moved = mechs.handleUp(tiles);
-        updateBoard(moved);
+        if (gameState == 1) {
+            System.out.println("UP");
+            int moved = mechs.handleUp(tiles);
+            updateBoard(moved);
+        }
     }
 
     public void downPressed() {
-        System.out.println("DOWN");
-        int moved = mechs.handleDown(tiles);
-        updateBoard(moved);
+        if (gameState == 1) {
+            System.out.println("DOWN");
+            int moved = mechs.handleDown(tiles);
+            updateBoard(moved);
+        }
     }
 
     public void rightPressed() {
-        System.out.println("RIGHT");
-        int moved = mechs.handleRight(tiles);
-        updateBoard(moved);
+        if (gameState == 1) {
+            System.out.println("RIGHT");
+            int moved = mechs.handleRight(tiles);
+            updateBoard(moved);
+        }
     }
 
     public void updateBoard(int moved) {
-        score = mechs.score;
-        if (moved == 1) {
+        if (moved != 0) {
             this.repaint();
         }
-        gameState = mechs.checkGameOver(tiles);
+        checkBestScore();
+    }
+
+    public void checkBestScore() {
+        try {
+            File scoreFile = new File("highscore.txt");
+            Scanner reader = new Scanner(scoreFile);
+            int highscore = Integer.valueOf(reader.nextLine());
+            System.out.println("high: " + highscore);
+
+            if (mechs.score > highscore) {
+                System.out.println("mechs score: " + mechs.score);
+                FileWriter fileWriter = new FileWriter("highscore.txt");
+                fileWriter.write(String.valueOf(mechs.score));
+                fileWriter.close();
+            }
+            reader.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void restart() {
@@ -273,7 +344,7 @@ public class Board extends JPanel {
                 tiles[i][j].setNumber(0);
             }
         }
-        score = 0;
+        mechs.score = 0;
         gameState = 0;
         this.repaint();
     }

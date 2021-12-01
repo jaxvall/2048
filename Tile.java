@@ -31,12 +31,12 @@ public class Tile {
 
         } else {
 
-            int fontSize = 33;
+            int fontSize = 36;
 
             if (number > 100) {
-                fontSize = 25;
+                fontSize = 30;
                 if (number > 1000) {
-                    fontSize = 20;
+                    fontSize = 26;
                 }
             }
 
