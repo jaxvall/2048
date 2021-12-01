@@ -72,18 +72,6 @@ public class Board extends JPanel {
                 tiles[i][j] = new Tile(0, i, j);
             }
         }
-
-        try {
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File("ClearSans-Bold.ttf")));
-
-            // InputStream stream =
-            // ClassLoader.getSystemClassLoader().getResourceAsStream("ClearSans-Bold.ttf");
-            // font13 = Font.createFont(Font.TRUETYPE_FONT, stream).deriveFont(13f);
-            // font18 = Font.createFont(Font.TRUETYPE_FONT, stream).deriveFont(18f);
-        } catch (IOException | FontFormatException e) {
-        }
-
     }
 
     public void paintComponent(Graphics g) {
@@ -112,7 +100,7 @@ public class Board extends JPanel {
 
         g.setFont(font);
         g.setColor(Color.decode("#776e65"));
-        g.drawString("2048", margin, widgetMargin + textMarginY - 13);
+        g.drawString("2048", margin, widgetMargin + textMarginY - 10);
     }
 
     public void paintScore(Graphics g) {
@@ -195,7 +183,6 @@ public class Board extends JPanel {
         }
 
         if (gameState == -1 || gameState == 2) {
-            System.out.println("ENDGAME PAINT");
             paintEndgame(g);
         }
     }
@@ -255,9 +242,8 @@ public class Board extends JPanel {
     }
 
     public void setRandTile(int randPos) {
-
         int randNum = rand.nextInt(5);
-        randNum = (randNum < 4) ? 1024 : 4;
+        randNum = (randNum < 4) ? 8192 : 8192;
 
         int row = Math.floorDiv(randPos, 4);
         int col = randPos % 4;
@@ -280,7 +266,6 @@ public class Board extends JPanel {
 
     public void leftPressed() {
         if (gameState == 1) {
-            System.out.println("LEFT");
             int moved = mechs.handleLeft(tiles);
             updateBoard(moved);
         }
@@ -288,7 +273,6 @@ public class Board extends JPanel {
 
     public void upPressed() {
         if (gameState == 1) {
-            System.out.println("UP");
             int moved = mechs.handleUp(tiles);
             updateBoard(moved);
         }
@@ -296,7 +280,6 @@ public class Board extends JPanel {
 
     public void downPressed() {
         if (gameState == 1) {
-            System.out.println("DOWN");
             int moved = mechs.handleDown(tiles);
             updateBoard(moved);
         }
@@ -304,7 +287,6 @@ public class Board extends JPanel {
 
     public void rightPressed() {
         if (gameState == 1) {
-            System.out.println("RIGHT");
             int moved = mechs.handleRight(tiles);
             updateBoard(moved);
         }
@@ -322,10 +304,8 @@ public class Board extends JPanel {
             File scoreFile = new File("highscore.txt");
             Scanner reader = new Scanner(scoreFile);
             int highscore = Integer.valueOf(reader.nextLine());
-            System.out.println("high: " + highscore);
 
             if (mechs.score > highscore) {
-                System.out.println("mechs score: " + mechs.score);
                 FileWriter fileWriter = new FileWriter("highscore.txt");
                 fileWriter.write(String.valueOf(mechs.score));
                 fileWriter.close();
@@ -338,7 +318,6 @@ public class Board extends JPanel {
     }
 
     public void restart() {
-        System.out.println("RESTART");
         for (int i = 0; i < tiles.length; i++) {
             for (int j = 0; j < tiles.length; j++) {
                 tiles[i][j].setNumber(0);

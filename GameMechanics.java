@@ -117,7 +117,7 @@ public class GameMechanics {
                 int num = currentTile.getNumber();
                 int nextNum = nextTile.getNumber();
 
-                if (num == nextNum && num != 2048) {
+                if (num == nextNum) {
                     tileChange = true;
                     score += num * 2;
                     currentTile.setNumber(num * 2);
