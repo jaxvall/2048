@@ -24,7 +24,7 @@ public class Board extends JPanel {
     private int tileMargin = 10;
     private int tileSize = 80;
     static private Tile[][] tiles = new Tile[4][4];
-    Random rand = new Random();
+    private Random rand = new Random();
 
     private GameMechanics mechs = new GameMechanics();
     private Action left = new AbstractAction() {
@@ -88,12 +88,12 @@ public class Board extends JPanel {
         paintInstructions(g2d);
     }
 
-    public void paintBackground(Graphics g) {
+    private void paintBackground(Graphics g) {
         g.setColor(Color.decode("#faf8ef"));
         g.fillRect(0, 0, windowSize, windowSize);
     }
 
-    public void paintTitle(Graphics g) {
+    private void paintTitle(Graphics g) {
         Font font = new Font("MonoSpaced", Font.BOLD, 52);
         FontMetrics fontMetrics = g.getFontMetrics(font);
         int textMarginY = -(int) fontMetrics.getLineMetrics("2048", g).getBaselineOffsets()[2];
@@ -103,7 +103,7 @@ public class Board extends JPanel {
         g.drawString("2048", margin, widgetMargin + textMarginY - 10);
     }
 
-    public void paintScore(Graphics g) {
+    private void paintScore(Graphics g) {
         int rectW = 100;
         int rectH = 50;
         int posX = margin + boardSize - 2 * rectW - 10;
@@ -121,7 +121,7 @@ public class Board extends JPanel {
         g.drawString(String.valueOf(mechs.score), posX + rectW / 6, posY + 40);
     }
 
-    public void paintHighScore(Graphics g) {
+    private void paintHighScore(Graphics g) {
         String highscore = "";
         try {
             File scoreFile = new File("highscore.txt");
@@ -150,7 +150,7 @@ public class Board extends JPanel {
         g.drawString(highscore, posX + rectW / 6, posY + 40);
     }
 
-    public void paintTiles(Graphics g) {
+    private void paintTiles(Graphics g) {
 
         g.translate(margin, margin);
         g.setColor(Color.decode("#bbada0"));
@@ -171,7 +171,7 @@ public class Board extends JPanel {
 
         for (int i = 0; i < tiles.length; i++) {
             for (int j = 0; j < tiles.length; j++) {
-                tiles[i][j].paintTiles(g, i, j, tileSize);
+                tiles[i][j].paintTile(g, i, j, tileSize);
             }
         }
 
@@ -187,7 +187,7 @@ public class Board extends JPanel {
         }
     }
 
-    public void paintInstructions(Graphics g) {
+    private void paintInstructions(Graphics g) {
         int posX = 0;
         int posY = boardSize + 30;
 
@@ -197,7 +197,7 @@ public class Board extends JPanel {
         g.drawString("- Press 'R' to restart game", posX, posY + 20);
     }
 
-    public void paintEndgame(Graphics g) {
+    private void paintEndgame(Graphics g) {
         g.setColor(new Color(250, 248, 239, 150));
         g.fillRoundRect(0, 0, boardSize, boardSize, 11, 11);
 
@@ -211,7 +211,7 @@ public class Board extends JPanel {
         g.drawString(message, (boardSize - textMarginX) / 2 + 5, boardSize / 2);
     }
 
-    public List<Integer> getEmptyTiles() {
+    private List<Integer> getEmptyTiles() {
         List<Integer> randPosList = IntStream.range(0, 16).boxed().collect(Collectors.toCollection(ArrayList::new));
         Collections.shuffle(randPosList);
 
@@ -227,7 +227,7 @@ public class Board extends JPanel {
         return randPosList;
     }
 
-    public void addRandTile(int numOfTiles, List<Integer> randPosList) {
+    private void addRandTile(int numOfTiles, List<Integer> randPosList) {
         for (int i = 0; i < numOfTiles; i++) {
             if (i < randPosList.size()) {
                 int randPos = randPosList.get(i);
@@ -236,7 +236,7 @@ public class Board extends JPanel {
         }
     }
 
-    public void setRandTile(int randPos) {
+    private void setRandTile(int randPos) {
         int randNum = rand.nextInt(5);
         randNum = (randNum < 4) ? 2 : 4;
 
@@ -246,7 +246,7 @@ public class Board extends JPanel {
         tiles[row][col].setNumber(randNum);
     }
 
-    public void setupKeybindings() {
+    private void setupKeybindings() {
         this.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "left");
         this.getActionMap().put("left", left);
         this.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "up");
@@ -259,42 +259,42 @@ public class Board extends JPanel {
         this.getActionMap().put("restartGame", restartGame);
     }
 
-    public void leftPressed() {
+    private void leftPressed() {
         if (gameState == 1) {
             int moved = mechs.handleLeft(tiles);
             updateBoard(moved);
         }
     }
 
-    public void upPressed() {
+    private void upPressed() {
         if (gameState == 1) {
             int moved = mechs.handleUp(tiles);
             updateBoard(moved);
         }
     }
 
-    public void downPressed() {
+    private void downPressed() {
         if (gameState == 1) {
             int moved = mechs.handleDown(tiles);
             updateBoard(moved);
         }
     }
 
-    public void rightPressed() {
+    private void rightPressed() {
         if (gameState == 1) {
             int moved = mechs.handleRight(tiles);
             updateBoard(moved);
         }
     }
 
-    public void updateBoard(int moved) {
+    private void updateBoard(int moved) {
         if (moved != 0) {
             this.repaint();
         }
         checkBestScore();
     }
 
-    public void checkBestScore() {
+    private void checkBestScore() {
         try {
             File scoreFile = new File("highscore.txt");
             Scanner reader = new Scanner(scoreFile);
@@ -312,7 +312,7 @@ public class Board extends JPanel {
         }
     }
 
-    public void restart() {
+    private void restart() {
         for (int i = 0; i < tiles.length; i++) {
             for (int j = 0; j < tiles.length; j++) {
                 tiles[i][j].setNumber(0);

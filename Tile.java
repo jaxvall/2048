@@ -3,7 +3,7 @@ import java.util.HashMap;
 
 public class Tile {
 
-    HashMap<Integer, Color> colorMap = new HashMap<>() {
+    private HashMap<Integer, Color> colorMap = new HashMap<>() {
         {
             put(2, Color.decode("#eee4da"));
             put(4, Color.decode("#ede0c8"));
@@ -42,7 +42,7 @@ public class Tile {
         this.row = row;
     }
 
-    public void paintTiles(Graphics g, int row, int col, int size) {
+    public void paintTile(Graphics g, int row, int col, int size) {
 
         int x = col * (10 + size) + 10;
         int y = row * (10 + size) + 10;

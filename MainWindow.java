@@ -3,18 +3,18 @@ import java.awt.*;
 
 public class MainWindow extends JFrame {
 
-    static int windowSize = 640;
+    private static int windowSize = 640;
 
     public static void main(String[] args) {
         new MainWindow();
     }
 
-    public MainWindow() {
+    private MainWindow() {
         setupComps();
 
     }
 
-    public void setupComps() {
+    private void setupComps() {
 
         Board board = new Board(windowSize);
 
@@ -29,10 +29,6 @@ public class MainWindow extends JFrame {
 
         this.setResizable(false);
         this.setSize(windowSize, windowSize);
-
-    }
-
-    public static void startGame() {
 
     }
 

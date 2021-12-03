@@ -3,14 +3,13 @@ import java.util.List;
 
 public class GameMechanics {
 
-    static int gameState = 0; // 0 = game not over, -1 = game lost, 1 = game won
-    int score = 0;
-    static boolean tileChange = false;
+    public int score = 0;
+    private static boolean tileChange = false;
 
     public GameMechanics() {
     }
 
-    int handleLeft(Tile[][] tiles) {
+    public int handleLeft(Tile[][] tiles) {
         tileChange = false;
 
         for (int row = 0; row < tiles.length; row++) {
@@ -27,7 +26,7 @@ public class GameMechanics {
         }
     }
 
-    int handleUp(Tile[][] tiles) {
+    public int handleUp(Tile[][] tiles) {
         tileChange = false;
 
         for (int col = 0; col < tiles.length; col++) {
@@ -44,7 +43,7 @@ public class GameMechanics {
         }
     }
 
-    int handleDown(Tile[][] tiles) {
+    public int handleDown(Tile[][] tiles) {
 
         tileChange = false;
 
@@ -62,7 +61,7 @@ public class GameMechanics {
         }
     }
 
-    int handleRight(Tile[][] tiles) {
+    public int handleRight(Tile[][] tiles) {
 
         tileChange = false;
 
